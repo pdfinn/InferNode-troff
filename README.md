@@ -449,17 +449,20 @@ you are writing in, and a window opens below it showing the document,
 set again 600 ms after you stop typing, unsaved edits and all; `Live`
 again stops it. Type in the text's window, not the document's: a key
 typed on a document goes back to its text, at the place last selected
-there. A book's, article's or memorandum's is set by `book -l`, the
-whole pipeline with no PDF, in a quarter to half a second for a
-chapter; a line at its top says how (`.\" book -m article -S numeric
--p works.bib`). Any other `.ms`, `.man` or `.me` file is set by
-`troff` with the macros its name gives. See
+there. A book, an article, a memorandum or a talk's slides are set by
+`book -l`, the whole pipeline with no PDF, in a quarter to half a
+second for a chapter; a line at its top says how (`.\" book -m article
+-S numeric -p works.bib`). A file with a `.slide` needs no such line:
+it is set as slides, each step of a slide a page. Any other `.ms`,
+`.man` or `.me` file is set by `troff` with the macros its name gives. See
 [docs/TROFF.md](docs/TROFF.md#writing-it-live).
 
 ## Not yet
 
 - The tests in `tests/` were written to run inside an InferNode tree
   and have not yet been made to run against the package.
+- `book2tex` writes books, articles and memoranda as LaTeX, not slides:
+  `-m slides` is refused, where beamer would be wanted.
 
 ## Licence
 
