@@ -409,15 +409,16 @@
 '	sp |\\n[book-tm]u-0.45i
 .	\" a left-hand head too wide to leave its folio room: the right's
 .	ds book-lh1 \\*[book-lh]
-.	if !\\n[book-oneside] .if \w'\f[SC]\\*[book-lh]\fP'>(\\n[book-ll]-8m) \{\
+.	if !\\n[book-oneside] .if \w^\f[SC]\\*[book-lh]\fP^>(\\n[book-ll]-8m) \{\
 .		if !\\n[book-lhsaid] .tm book: the title too wide for a running head; the chapter's set instead
 .		nr book-lhsaid 1
 .		ds book-lh1 \\*[book-rh]
 .	\}
 .	nr book-odd \\n[book-oneside]
 .	if o .nr book-odd 1
-.	ie \\n[book-odd] .tl '\X^folio \\n%^\X^dest pg-\\n% page^\f[SC]\\*[book-rh]\fP''\\n%'
-.	el .tl '\X^folio \\n%^\X^dest pg-\\n% page^\\n%''\f[SC]\\*[book-lh1]\fP'
+.	\" (" delimits the heads, not ': a title may have an apostrophe)
+.	ie \\n[book-odd] .tl "\X^folio \\n%^\X^dest pg-\\n% page^\f[SC]\\*[book-rh]\fP""\\n%"
+.	el .tl "\X^folio \\n%^\X^dest pg-\\n% page^\\n%""\f[SC]\\*[book-lh1]\fP"
 .	\}
 .\}
 .book-tag endart
@@ -490,7 +491,7 @@
 .br
 .ps
 .vs
-.if !'\\*[book-subtitle]'' \{\
+.if \w^\\*[book-subtitle]^ \{\
 .	sp 0.3i
 .	book-size 14 10
 .	vs \\n[.s]p*12/10
@@ -508,7 +509,7 @@
 .book-tag P
 \\*[book-author]
 .ps
-.if !'\\*[book-date]'' \{\
+.if \w^\\*[book-date]^ \{\
 .	sp 0.3i
 .	ce 1
 .	book-tag P
@@ -679,7 +680,7 @@
 .\}
 .\" a running head too wide to leave its folio room: the chapter's number
 .\" (as LaTeX's \chapter[short]{long} would be given), else none
-.if \w'\s-1\f[SC]\\*[book-rh]\fP\s+1'>(\\n[book-ll]-8m) \{\
+.if \w^\s-1\f[SC]\\*[book-rh]\fP\s+1^>(\\n[book-ll]-8m) \{\
 .	tm book: the running head too wide; a short title, .chapter "\\$2" label "Short" (at \\n[.c] of \\n[.F])
 .	ie \\n[book-chnum] .ds book-rh \\*[book-chword] \\n[book-chapter]
 .	el .ds book-rh
@@ -1312,7 +1313,7 @@
 .	in 0
 .	fi
 .	nr book-eqe \\n[.d]
-.	if !'\\*[book-eqlabel]'' \{\
+.	if \w^\\*[book-eqlabel]^ \{\
 .\"		on the equation's baseline
 .		sp -(\\n[book-eqpost]u+1v)
 .		lt \\n[book-ll]u
@@ -1348,7 +1349,7 @@
 .book-vstretch 3p
 .book-tag end
 .book-tag push Figure
-.ie '\\*[book-alt]'' \{\
+.ie !\w^\\*[book-alt]^ \{\
 .	tm book: a picture with no .alt (at \\n[.c] of \\n[.F])
 .	book-tag alt Picture
 .\}
@@ -1405,7 +1406,7 @@
 .	\}
 .	book-tag end
 .	book-tag push Figure
-.	ie '\\*[book-alt]'' \{\
+.	ie !\w^\\*[book-alt]^ \{\
 .		tm book: an image with no .alt (\\$1, at \\n[.c] of \\n[.F])
 .		book-tag alt Image
 .	\}
@@ -1504,7 +1505,7 @@
 .ds book-flx \X^dest book-fl\\*[book-flk]\\*[book-flno]^
 .if !'\\*[book-fllab]'' .as book-flx \X^dest lab-\\*[book-fllab]^
 .\" a line centred, more filled
-.ie \w'\\*[book-flcap]'<=\\n[.l] \{\
+.ie \w^\\*[book-flcap]^<=\\n[.l] \{\
 .	ce 1
 \\*[book-flx]\\*[book-flcap]
 .\}
