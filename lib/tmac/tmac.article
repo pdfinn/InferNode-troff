@@ -50,7 +50,7 @@
 .\" measure, until the title is made; with no title, the columns at once
 .de book-begin-hook
 .nr art-begun 1
-.if '\\*[book-title]'' .if \\n[art-ncol]>1 .book-columns \\n[art-ncol]
+.if !\w^\\*[book-title]^ .if \\n[art-ncol]>1 .book-columns \\n[art-ncol]
 ..
 .\"
 .\" the authors, each with what is said of them
@@ -134,7 +134,7 @@
 .book-tag end
 .ps
 .vs
-.if !'\\*[book-subtitle]'' \{\
+.if \w^\\*[book-subtitle]^ \{\
 .	sp 0.15i
 .	ps \\n[book-ps]+2
 .	book-tag P
@@ -150,7 +150,7 @@
 .	art-authors 1
 .	book-tag end
 .\}
-.if !'\\*[book-date]'' \{\
+.if \w^\\*[book-date]^ \{\
 .	sp 0.1i
 .	ce 1
 .	book-tag P
@@ -161,7 +161,7 @@
 .	sp 0.25i
 .	art-absput
 .\}
-.if !'\\*[art-kw]'' \{\
+.if \w^\\*[art-kw]^ \{\
 .	in 0.5i
 .	ll \\n[book-fullw]u-0.5i
 .	ps \\n[book-ps]-1
@@ -223,12 +223,12 @@
 .\" the first section makes the title, if it has not been
 .rn section book-section
 .de section
-.if !\\n[art-made] .if !'\\*[book-title]'' .maketitle
+.if !\\n[art-made] .if \w^\\*[book-title]^ .maketitle
 .book-section \\$@
 ..
 .\" an unnumbered section (Acknowledgements)
 .de section*
-.if !\\n[art-made] .if !'\\*[book-title]'' .maketitle
+.if !\\n[art-made] .if \w^\\*[book-title]^ .maketitle
 .nr book-chnum0 \\n[book-nochap]
 .nr book-nochap 0
 .nr book-section -1

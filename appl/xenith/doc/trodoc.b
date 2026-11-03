@@ -20,7 +20,8 @@ implement Docengine;
 #
 # (book(1)'s options: -f, -m, -p, -S; the file's name may follow), or
 # when it uses -mbook's headings (.chapter, .section, .part,
-# .maketitle) or paragraphs (.p). Its cross-references
+# .maketitle) or paragraphs (.p); a talk's slides (book -m slides)
+# when it has a .slide. Its cross-references
 # are taken from book.aux beside it, where book(1) left them, the first
 # time; then from the last time it was set, kept in /tmp.
 #
@@ -197,6 +198,7 @@ runcmd(cmd: string, args: list of string, dir: string, in, out, err: ref Sys->FD
 bookopts(data: array of byte): (int, list of string)
 {
 	heads := 0;
+	slides := 0;
 	nl := 0;
 	for(i := 0; i < len data; ){
 		e := i;
@@ -209,7 +211,12 @@ bookopts(data: array of byte): (int, list of string)
 		if(prefix(line, ".chapter") || prefix(line, ".section") || prefix(line, ".part ") ||
 				prefix(line, ".maketitle") || line == ".p")
 			heads = 1;
+		if(prefix(line, ".slide"))
+			slides = 1;
 	}
+	# a talk's slides (-mslides'), by their .slide
+	if(slides)
+		return (1, "-m" :: "slides" :: nil);
 	return (heads, nil);
 }
 

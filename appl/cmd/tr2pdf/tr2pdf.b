@@ -562,15 +562,18 @@ postps()
 	"linkbeg" =>
 		# a link of what is set from here to linkend, a rectangle on
 		# each line it is set on (a URL broken across lines)
+		# none in an artifact, outside the structure, where PDF/UA
+		# wants every link (a slide's page before its last has its
+		# links on its last)
 		(lnk, nil) := strcut(arg);
-		if(lnk != "" && lnk != "#")
+		if(lnk != "" && lnk != "#" && !(tagged && tart > 0))
 			lkspan_beg(lnk);
 	"linkend" =>
 		lkspan_end();
 	"link" =>
 		(lnk, spec) := strcut(arg);
 		v := scanints(spec, 2);
-		if(lnk != "" && lnk != "#" && len v == 2)
+		if(lnk != "" && lnk != "#" && len v == 2 && !(tagged && tart > 0))
 			outlink(lnk, v[0], v[1]);
 	"info" =>
 		i := 0;

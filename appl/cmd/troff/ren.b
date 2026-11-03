@@ -190,7 +190,9 @@ ren_sp(n: int, nodiv: int)
 	if(nr(R_d) > nr(R_h))
 		nrset(R_h, nr(R_d));
 	if(cdiv != nil && !nodiv){
-		if(linevs)
+		if(linevs && n)	# (a line reread from a diversion: its own spacing)
+			cdiv.sbuf += sys->sprint("%c%s %du\n", c_cc, TR_DIVVS, n);
+		else if(linevs)
 			cdiv.sbuf += sys->sprint("%c%s %du\n", c_cc, TR_DIVVS, nr(R_v));
 		else if(n)
 			cdiv.sbuf += sys->sprint("%csp %du\n", c_cc, n);

@@ -1,0 +1,618 @@
+.\" tmac.slides: slides for a talk (troff -mslides; book -m slides)
+.\"
+.\" -mbook's macros, set as slides: a page each, wider than it is tall,
+.\" the type large and sans serif, the text ragged and not hyphenated.
+.\" What -mbook sets in a page is set in a slide: lists, equations,
+.\" tables, pictures, images, chess boards, links and citations (refer's
+.\" numbered style; book -m slides uses it). LaTeX's beamer is the model.
+.\"
+.\"	.title T  .subtitle S  .author A  .affil Place  .date D
+.\"	.maketitle			the title slide (or the first slide makes it)
+.\"	.section "Title" [label]	a slide of its own, beginning a part of the talk
+.\"	.slide ["Title"] [label]	a slide; what follows, to the next, is on it
+.\"	.item [mark]			a list's item; outside a list, it begins one
+.\"					(-mbook's .list ... .endlist as well)
+.\"	.pause				what follows shown on the next page, the
+.\"					slide's page again with it added (beamer's \pause)
+.\"	.columns  .column [width]  .endcolumns
+.\"					side by side: each .column begins one, half
+.\"					the measure wide unless width is given
+.\"	.code ... .endcode		a program's text, as typed, on a tint
+.\"	.aspect 16:9|4:3		the page's shape (16:9), before the first slide
+.\"	.typeface sans|serif		Libertinus Sans (the default) or Serif
+.\"	.accent colour			the titles' colour (#1d3f6e)
+.\"
+.\" A slide is diverted whole and set when the next begins, so that it is
+.\" known before it is set: each .pause ends a step, and the slide is set
+.\" once for each, the first step on its first page, the first two on the
+.\" next, and so on; what is shown already does not move. A slide too tall
+.\" for its page is said, on the standard error, with how much; its text
+.\" runs off the page, as beamer's does, rather than onto another. Pages
+.\" before a slide's last repeat it: in the tagged PDF they are artifacts,
+.\" its structure and links on its last page only, so that it is read
+.\" once. The page's folio is the slide's number: its pages share it.
+.\"
+.so /lib/tmac/tmac.book
+.\"
+.\" ---------------------------------------------------------------
+.\" the page and the type: 10 by 5.625 inches (16:9), 20 points on 25
+.\"
+.nr book-ps 20
+.nr book-vs 25p
+.nr book-oneside 1
+.nr book-plain 1
+.nr book-recto 0
+.nr book-nochap 1
+.nr book-pi 0
+.ds book-adj l
+.de aspect
+.ie '\\$1'4:3' .papersize 10i 7.5i
+.el .papersize 10i 5.625i
+..
+.aspect 16:9
+.margins 0.55i 0.45i 0.75i 0.75i
+.\" ragged, no hyphens: a slide's lines are read at a glance
+.de book-fill
+.ad \\*[book-adj]
+.nh
+.ss 12 0
+..
+.de typeface
+.ie '\\$1'serif' \{\
+.	fp 1 R R
+.	fp 2 I I
+.	fp 3 B B
+.	fp 4 BI BI
+.\}
+.el \{\
+.	\" (Libertinus Sans has no bold italic: its bold)
+.	fp 1 R HR
+.	fp 2 I HI
+.	fp 3 B HB
+.	fp 4 BI HB
+.\}
+..
+.typeface sans
+.ds sl-accent #1d3f6e
+.ds sl-grey #6b6b6b
+.ds sl-tint #eef0f3
+.de accent
+.ds sl-accent \\$1
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" the page: its head (the size, once; the margin) and nothing else;
+.\" each slide's page is laid out by sl-page, its title, its text, its
+.\" folio, each where it goes
+.\"
+.de book-hd
+.if !\\n[book-sized] .book-papersize
+.po \\n[book-im]u
+..
+.nr sl-pages 0		\" pages set
+.nr sl-n 0		\" the slide's number (the folio)
+.nr sl-open 0		\" a slide being diverted
+.nr sl-steps 0		\" its steps (.pause)
+.nr sl-made 0		\" the title slide made
+.nr sl-hl 2		\" a slide title's heading level (3 after a section)
+.nr sl-ol 1		\" its outline level (2 after a section)
+.nr sl-incol 0		\" in .columns
+.nr sl-final 0		\" setting a slide's last page
+.\" a new page, unless none has been set: its text from the top margin
+.de sl-newpage
+.book-begin
+.br
+.if \\n[sl-pages] .bp
+.nr sl-pages +1
+.rs
+.sp |0
+..
+.\" the slide's folio, at the foot's right, a link's destination (pg-N)
+.\" on its first page
+.de sl-foot
+.ev sl-ft
+.nf
+.in 0
+.ft R
+.ps \\n[book-ps]*6/10
+.vs \\n[.s]p*12/10
+.lt \\n[book-fullw]u
+.\" (its baseline halfway down the bottom margin: the line it is set in
+.\" ends on the page, which a lower one would leave for another)
+.nr sl-y0 \\n[book-ph]-(\\n[book-bm]/2)-\\n[.v]
+.rs
+.sp |\\n[sl-y0]u
+.pl \\n[book-ph]u
+.book-tag art
+.ie \\$1 .tl '\X^folio \\n[sl-n]^\X^dest pg-\\n[sl-n] page^''\m[\\*[sl-grey]]\\n[sl-n]\m[]'
+.el .tl '\X^folio \\n[sl-n]^''\m[\\*[sl-grey]]\\n[sl-n]\m[]'
+.book-tag endart
+.ev
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" the title slide
+.\"
+.nr sl-na 0
+.ds sl-affil
+.de author
+.nr sl-na +1
+.ie \\n[sl-na]=1 .ds book-author \\$*
+.el .as book-author , \\$*
+.dv info Author \\*[book-author]
+..
+.de affil
+.ds sl-affil \\$*
+..
+.de maketitle
+.sl-end
+.nr sl-made 1
+.nr sl-n +1
+.sl-newpage
+.ev sl-hd
+.evc 0
+.in 0
+.ll \\n[book-fullw]u
+.fi
+.ad c
+.nh
+.\" (troff's | is of the first term: the place reckoned first)
+.nr sl-y0 \\n[book-ph]*30/100
+.sp |\\n[sl-y0]u
+.book-tag H1
+.ft B
+.ps \\n[book-ps]*9/5
+.vs \\n[.s]p*12/10
+\X^dest pg-\\n[sl-n] page^\X^folio \\n[sl-n]^\m[\\*[sl-accent]]\\*[book-title]\m[]
+.br
+.book-tag end
+.ft R
+.if \w^\\*[book-subtitle]^ \{\
+.	sp 0.1i
+.	ps \\n[book-ps]*6/5
+.	vs \\n[.s]p*12/10
+.	book-tag P
+\f[I]\\*[book-subtitle]\fP
+.	br
+.\}
+.ps \\n[book-ps]
+.vs \\n[book-vs]u
+.if \w^\\*[book-author]^ \{\
+.	sp 0.4i
+.	book-tag P
+\\*[book-author]
+.	br
+.\}
+.ps \\n[book-ps]*8/10
+.vs \\n[.s]p*13/10
+.if \w^\\*[sl-affil]^ \{\
+.	book-tag P
+\m[\\*[sl-grey]]\\*[sl-affil]\m[]
+.	br
+.\}
+.if \w^\\*[book-date]^ \{\
+.	sp 0.15i
+.	book-tag P
+\m[\\*[sl-grey]]\\*[book-date]\m[]
+.	br
+.\}
+.book-tag end
+.ev
+..
+.\" (a string is tested for text by its width, \w^\*[s]^: a comparison,
+.\" '\*[s]'', is broken by an apostrophe in it, as in "Kernighan's")
+.\" the title slide first, if there is a title and it is not made
+.de sl-first
+.if !\\n[sl-made] .if \w^\\*[book-title]^ .maketitle
+.nr sl-made 1
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" a section: a slide of its title alone, a third of the way down; the
+.\" slides after it below it in the outline and the structure
+.\"
+.de section
+.book-begin
+.sl-end
+.sl-first
+.nr sl-n +1
+.nr sl-hl 3
+.nr sl-ol 2
+.ds book-cur \\n[sl-n]
+.if !'\\$2'' .book-label \\$2
+.sl-newpage
+.ev sl-hd
+.evc 0
+.in 0
+.ll \\n[book-fullw]u
+.fi
+.ad l
+.nh
+.ft B
+.ps \\n[book-ps]*8/5
+.vs \\n[.s]p*12/10
+.nr sl-y0 \\n[book-ph]*38/100
+.sp |\\n[sl-y0]u
+.ds sl-x \X^outline 1 \\$1^
+.if !'\\$2'' .as sl-x \X^dest lab-\\$2^
+.book-tag H2
+\\*[sl-x]\m[\\*[sl-accent]]\\$1\m[]
+.br
+.book-tag end
+.ft R
+.ev
+.sl-foot 1
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" a slide: diverted, step by step (sl-b1, sl-b2 ...), until the next
+.\"
+.de slide
+.book-begin
+.sl-end
+.sl-first
+.nr sl-n +1
+.ds sl-title \\$1
+.ds sl-label \\$2
+.ds book-cur \\n[sl-n]
+.nr sl-line \\n[.c]
+.if !'\\$2'' .book-label \\$2
+.nr sl-open 1
+.nr sl-steps 1
+.\" where its text begins on the page (below a title of one line), and
+.\" how far down the steps before this one reach
+.ie !\w^\\$1^ .nr sl-top \\n[book-tm]
+.el .nr sl-top \\n[book-tm]+(\\n[book-ps]p*3/2)+0.3i
+.nr sl-done 0
+.in 0
+.ll \\n[book-fullw]u
+.ps \\n[book-ps]
+.vs \\n[book-vs]u
+.ft R
+.fi
+.book-fill
+.di sl-b1
+.ns
+..
+.de pause
+.ie \\n[sl-incol] .tm slides: .pause within .columns is not supported (at \\n[.c] of \\n[.F])
+.el .if \\n[sl-open] \{\
+.	br
+.	di
+.	nr sl-done +\\n[dn]
+.	nr sl-steps +1
+.	di sl-b\\n[sl-steps]
+.\}
+..
+.\" the slide ended: its steps set, a page for each, the last its whole
+.de sl-end
+.if \\n[sl-incol] .endcolumns
+.if \\n[sl-open] \{\
+.	br
+.	\" the last line's place in the last step: how far down it reaches
+.	nr sl-last \\n[.d]
+.	sl-endlists
+.	br
+.	di
+.	nr sl-open 0
+.	nr sl-k 1
+.	sl-pages
+.	nr sl-k 1
+.	sl-rm
+.\}
+..
+.de sl-endlists
+.if \\n[book-ld]>0 \{\
+.	endlist
+.	sl-endlists
+.\}
+..
+.de sl-pages
+.nr sl-final \\n[sl-k]=\\n[sl-steps]
+.sl-page \\n[sl-k]
+.nr sl-final 0
+.nr sl-k +1
+.if \\n[sl-k]<=\\n[sl-steps] .sl-pages
+..
+.de sl-rm
+.rm sl-b\\n[sl-k]
+.nr sl-k +1
+.if \\n[sl-k]<=\\n[sl-steps] .sl-rm
+..
+.\" the slide's page showing its first $1 steps: its title, its text,
+.\" its folio; a page before the last an artifact
+.de sl-page
+.sl-newpage
+.\" (the page as long as its text, however long: what is too long runs
+.\" off the page's foot, the PDF's page its size, not onto another)
+.pl 4*\\n[book-ph]u
+.ie \\n[sl-final] .book-tag push Sect
+.el .book-tag art
+.ie \w^\\*[sl-title]^ .sl-head \\$1
+.el .sp |\\n[book-tm]u
+.nr sl-i 1
+.sl-steps \\$1
+.if \\n[sl-final] \{\
+.	\" how far below the text's foot the last line is (its baseline)
+.	nr sl-over \\n[sl-y]+\\n[sl-last]-(\\n[book-ph]-\\n[book-bm])
+.	nr sl-over (\\n[sl-over]*72+(1i/2))/1i
+.	if \\n[sl-over]>0 .tm slides: slide \\n[sl-n] (at \\n[sl-line] of \\n[.F]) is too tall for its page by \\n[sl-over] points
+.	book-tag pop
+.\}
+.if !\\n[sl-final] .book-tag endart
+.sl-foot \\$1=1
+..
+.\" its title: at the top margin, the slide's destination and its place in
+.\" the outline on its first page
+.de sl-head
+.ev sl-hd
+.evc 0
+.in 0
+.ll \\n[book-fullw]u
+.fi
+.ad l
+.nh
+.ft B
+.ps \\n[book-ps]*3/2
+.vs \\n[.s]p*12/10
+.\" (the first line's top at the margin)
+.nr sl-y0 \\n[book-tm]-\\n[.v]+\\n[.s]p
+.rs
+.sp |\\n[sl-y0]u
+.ds sl-x
+.if \\$1=1 \{\
+.	ds sl-x \X^outline \\n[sl-ol] \\*[sl-title]^
+.	if !'\\*[sl-label]'' .as sl-x \X^dest lab-\\*[sl-label]^
+.\}
+.book-tag H\\n[sl-hl]
+\\*[sl-x]\m[\\*[sl-accent]]\\*[sl-title]\m[]
+.br
+.book-tag end
+.ft R
+.ev
+.sp 0.3i
+..
+.\" steps 1 to $1, one below another
+.de sl-steps
+.if \\n[sl-i]=\\$1 .mk sl-y
+.nf
+.in 0
+.sl-b\\n[sl-i]
+.fi
+.nr sl-i +1
+.if \\n[sl-i]<=\\$1 .sl-steps \\$1
+..
+.\" a label's destination is set on a slide's last page only, as the
+.\" text there is all of it; its number the slide's
+.de book-label
+.tm aux:.ds ref-\\$1 \\*[book-cur]
+.tm aux:.ds pageref-\\$1 \\n[sl-n]
+..
+.de label
+.book-label \\$1
+\\!.sl-dest lab-\\$1
+..
+.de sl-dest
+.if \\n[sl-final] \!x X dest \\$1
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" paragraphs and lists: a paragraph not indented, a little space above
+.\" it; an item outside a list begins one, ended with the slide
+.\"
+.de p
+.if \\n[sl-open] \{\
+.	br
+.	book-tag P
+.	sp 0.4v
+.	ti 0
+.\}
+..
+.de book-blank
+.p
+..
+.rn item book-item
+.de item
+.if !\\n[book-ld] .list
+.book-item \\$@
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" columns: each diverted, then set side by side from where they began,
+.\" the text after them below the longest
+.\"
+.nr sl-gap 0.4i
+.de columns
+.br
+.if \\n[sl-incol] .endcolumns
+.sp 0.4v
+.nr sl-incol 1
+.nr sl-cy0 \\n[.d]
+.nr sl-ncol 0
+.nr sl-cx 0
+.nr sl-ll0 \\n[.l]
+.nr sl-in0 \\n[.i]
+.nr sl-ld0 \\n[book-ld]
+.nr sl-bll0 \\n[book-ll]
+..
+.de column
+.if !\\n[sl-incol] .columns
+.br
+.if \\n[sl-ncol] .sl-colend
+.nr sl-ncol +1
+.nr sl-cw (\\n[sl-ll0]-\\n[sl-in0]-\\n[sl-gap])/2
+.if !'\\$1'' .nr sl-cw (\\$1)
+.nr sl-cx\\n[sl-ncol] \\n[sl-in0]+\\n[sl-cx]
+.nr sl-cx +\\n[sl-cw]+\\n[sl-gap]
+.di sl-c\\n[sl-ncol]
+.in 0
+.ll \\n[sl-cw]u
+.\" (the column's measure, -mbook's: displays centred in it)
+.nr book-ll \\n[sl-cw]
+.\" (its text a paragraph of its own, not the last column's)
+.book-tag end
+.ns
+..
+.de sl-colend
+.br
+.sl-colendl
+.di
+..
+.de sl-colendl
+.if \\n[book-ld]>\\n[sl-ld0] \{\
+.	endlist
+.	sl-colendl
+.\}
+..
+.de endcolumns
+.br
+.if \\n[sl-ncol] .sl-colend
+.nr sl-incol 0
+.mk sl-ct
+.nr sl-cb \\n[sl-ct]
+.nr sl-i 1
+.if \\n[sl-ncol] .sl-colput
+.sp |\\n[sl-cb]u
+.in \\n[sl-in0]u
+.ll \\n[sl-ll0]u
+.nr book-ll \\n[sl-bll0]
+.fi
+.book-tag end
+..
+.de sl-colput
+.sp |\\n[sl-ct]u
+.in \\n[sl-cx\\n[sl-i]]u
+.nf
+.sl-c\\n[sl-i]
+.br
+.if \\n[.d]>\\n[sl-cb] .nr sl-cb \\n[.d]
+.rm sl-c\\n[sl-i]
+.nr sl-i +1
+.if \\n[sl-i]<=\\n[sl-ncol] .sl-colput
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" a program's text: as typed, in Libertinus Mono, on a tint the
+.\" measure wide (or its widest line's); a line beginning with a dot
+.\" written \&. to be text
+.\"
+.de code
+.br
+.sp 0.5v
+.nr sl-cin \\n[.i]
+.nr sl-cw \\n[.l]-\\n[.i]
+.di sl-cd
+.ev sl-code
+.evc 0
+.nf
+.ft CR
+.ps \\n[book-ps]*4/5
+.vs \\n[.s]p*13/10
+.in \\n[sl-cin]u+0.6m
+.book-tag Code
+..
+.de endcode
+.br
+.book-tag end
+.nr sl-cv \\n[.v]
+.ev
+.di
+.nr sl-cdh \\n[dn]
+.\" (as wide as its widest line, if that is wider)
+.if \\n[dl]+0.6m>\\n[sl-cw] .nr sl-cw \\n[dl]+0.6m
+.nf
+.in \\n[sl-cin]u
+.mk sl-cy
+\v'-\\n[.v]u'\m[\\*[sl-tint]]\D'P \\n[sl-cw]u 0 0 \\n[sl-cdh]u+(\\n[sl-cv]u*46u/100u) -\\n[sl-cw]u 0'\m[]
+.sp |\\n[sl-cy]u
+.sl-cd
+.rm sl-cd
+.in \\n[sl-cin]u
+.fi
+.sp 0.6v
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" an image (-mbook's .image): its room made, though it begin a slide or
+.\" a column, where no space is (.ns); given no size, its own, no wider
+.\" than the line and no taller than the room below it on the slide
+.\"
+.rn image book-image
+.de image
+.if \\n[sl-open] .rs
+.ie !\\n[sl-open] .book-image \\$@
+.el .ie '\\$2\\$3'' .sl-image \\$1
+.el .book-image \\$@
+..
+.de sl-image
+.imgsize \\$1
+.nr sl-iw 0
+.nr sl-ih 0
+.if (\\n[imgw]>0)&(\\n[imgh]>0) \{\
+.	nr sl-ires \\n[imgres]
+.	if !\\n[sl-ires] .nr sl-ires 72
+.	nr sl-iw \\n[imgw]*1i/\\n[sl-ires]
+.	nr sl-ih \\n[imgh]*1i/\\n[sl-ires]
+.	\" (the room: from here, below what is above it, to the text's foot)
+.	nr sl-room \\n[book-ph]-\\n[book-bm]-\\n[sl-top]-\\n[sl-done]-\\n[.d]
+.	if \\n[sl-incol] .nr sl-room -\\n[sl-cy0]
+.	if \\n[.d]>0 .nr sl-room -0.3v
+.	if (\\n[sl-ih]>\\n[sl-room])&(\\n[sl-room]>1v) \{\
+.		nr sl-iw \\n[sl-iw]/10*\\n[sl-room]/(\\n[sl-ih]/10)
+.		nr sl-ih \\n[sl-room]
+.	\}
+.\}
+.ie \\n[sl-ih] .book-image \\$1 \\n[sl-iw]u \\n[sl-ih]u
+.el .book-image \\$1
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" floats set where they are (a slide has nowhere else to put them);
+.\" notes, which a slide has no foot for, refused
+.\"
+.de book-flend1
+.nr book-flh\\n[book-flnext] \\n[dn]
+.nr book-flnext +1
+.sp 0.5v
+.book-flout
+.sp 0.5v
+..
+.de fn
+.tm slides: a note on a slide is not set (at \\n[.c] of \\n[.F])
+.di sl-fn
+..
+.de fe
+.br
+.di
+.rm sl-fn
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" the references (refer's .bibliography): a slide of their own, a size
+.\" smaller, each hung from its label ([1]) as -mbook hangs them
+.\"
+.de ]bb
+.slide "References"
+.ps \\n[book-ps]*7/10
+.vs \\n[.s]p*13/10
+.ad l
+.nr book-hy0 0
+..
+.de ]bz
+.br
+.book-tag end
+.in 0
+.ps \\n[book-ps]
+.vs \\n[book-vs]u
+.ad \\*[book-adj]
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" the end: the last slide set, and the title slide if no slide made
+.\" it (and not -mbook's end: a slide leaves no notes nor floats waiting)
+.\"
+.de sl-finish
+.sl-end
+.sl-first
+..
+.em sl-finish

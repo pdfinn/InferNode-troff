@@ -3,7 +3,8 @@
 A typesetting system for books, for [InferNode](https://github.com/infernode-os/infernode):
 troff and its preprocessors (eqn, tbl, pic, refer, chess), PDF output (tr2pdf),
 macro packages for books (`-mbook`), journal articles (`-marticle`),
-memoranda and reports (`-mmemo`), papers (`-ms`) and manual pages
+memoranda and reports (`-mmemo`), a talk's slides (`-mslides`), papers
+(`-ms`) and manual pages
 (`-man`), an index maker, a LaTeX converter, and the Libertinus fonts.
 
 ![Two pages of a chapter set by book(1): a chapter opening with an epigraph, footnotes, displayed and inline equations, a section heading, a table and its caption](docs/images/chapter.png)
@@ -47,6 +48,11 @@ it, what was typed beside a live document went into the text twice.
   flush at their foot and the last page's balanced, citations numbered
   ([1]). A technical memorandum headed as Bell Laboratories' were, or a
   report.
+- **Slides.** A talk's slides, with what a book has in a page: lists,
+  equations, tables, pictures, programs' text, columns side by side,
+  numbered citations. A slide is shown a step at a time (`.pause`),
+  what is shown already never moving, and one too tall for its page is
+  said, with by how much.
 - **Tables, pictures and images.** tbl's tables, pic's drawings, PNG and
   JPEG images, and the first page of a PDF as a figure in vectors.
 - **An accessible PDF.** The PDF is tagged and claims PDF/UA-1, and
@@ -208,6 +214,51 @@ Bell Laboratories' were: the subject and its file at the left; the
 date, the authors and the memorandum's number at the right; `MEMORANDUM
 FOR FILE` across the page below ([`examples/memo.ms`](examples/memo.ms),
 [the PDF](examples/memo.pdf)). `.kind report` heads it as a report.
+
+## Slides
+
+`book -m slides` sets a talk with `-mslides`: `-mbook`'s macros, a
+page a slide, 16:9, the type large and sans serif, the text ragged and
+not hyphenated. A slide is `.slide` and its title; what follows, to
+the next, is on it. `.item` begins a list of bullets if none is open.
+
+    .title "Setting Type Whole"
+    .author "A. Typesetter"
+    .section "Lines"
+    .slide "A line at a time"
+    Troff fills a line until the next word will not fit
+    .cite ossanna1976
+    .pause
+    .item
+    A loose line is found only when it is set
+    .pause
+    .item
+    Knuth and Plass choose every break of a paragraph at once
+
+    book -m slides -p works.bib slides.ms
+
+![Six slides set by -mslides: a title slide; a slide of a sentence and three bullets; bullets beside an equation; eqn's source on a tint beside the formula it sets; a table of timings; a pipeline drawn by pic](docs/images/slides.png)
+
+*Six of the fifteen pages of [`examples/slides.ms`](examples/slides.ms)
+([the PDF](examples/slides.pdf)).*
+
+Each `.pause` ends a step: the slide is set once for each, the first
+step on its first page, the first two on its next, and so on, as
+beamer's `\pause` does, and what was shown already does not move. Its
+pages share its number. In the tagged PDF the pages before a slide's
+last are artifacts, so that the slide is read once: its structure, a
+section of its own under its heading, and its links are on its last
+page. `.columns`, `.column` and `.endcolumns` set text, lists,
+pictures or equations side by side; `.code` sets a program's text on a
+tint. `.section` is a slide of its own, beginning a part of the talk,
+its slides below it among the PDF's bookmarks. Citations are numbered
+(`[1]`), and `.bibliography` is a slide. A slide is set whole, once it
+is known, so one too tall for its page is said, with by how much, and
+runs off its page rather than onto the next. `.aspect 4:3`, `.typeface
+serif` and `.accent` change the page, the face and the titles' colour.
+
+In Xenith a file with a `.slide` is set as slides, and shown beside
+its text as it is written (`Live`).
 
 ## Logic
 

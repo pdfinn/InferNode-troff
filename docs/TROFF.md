@@ -21,7 +21,7 @@ to read in InferNode's document views.
 | `tr2img` | A page of troff's output painted as the document views paint them (its fonts, drawings and images), as a PPM image | |
 | `mkindex` | A book's index from troff's output: makeindex's entries, sorted word by word as the *Chicago Manual* sorts, Greek and accents included | |
 | `book2tex` | A book, article or memorandum as LaTeX: LaTeX's book and article for LuaLaTeX, or a journal's class (IEEEtran, acmart) for pdfLaTeX | |
-| `book` | Runs them (with `-mbook`, or `-m article` or `-m memo`): refer, pic, chess, tbl and eqn (each if there is anything for it), troff `-mbook` until its references settle, tr2pdf | |
+| `book` | Runs them (with `-mbook`, or `-m article`, `-m memo` or `-m slides`): refer, pic, chess, tbl and eqn (each if there is anything for it), troff `-mbook` until its references settle, tr2pdf | |
 
 `troff`, `eqn`, `tbl` (with `-C`), `pic`, and `refer` without a style, write what
 the C programs they came from write, byte for byte, but where those
@@ -65,8 +65,9 @@ near the top says how:
 
 or the line showing how it is made, as the examples have
 (`.\"	book -p works.bib chapter.ms	# chapter.pdf`). With neither, a
-file using `-mbook`'s headings or `.p` is set by `book -l`, and any
-other by troff with the macros its name gives.
+file using `-mbook`'s headings or `.p` is set by `book -l`, one with a
+`.slide` by `book -l -m slides`, and any other by troff with the
+macros its name gives.
 
 It is quick enough to write in. On one machine, from the edit's
 pause to troff's output, the emulator's start included:
@@ -733,6 +734,99 @@ delimited by `d`. It is there now.
 `tests/host/article_test.sh` checks them, and an article of six pages
 generated with notes and figures in both columns and across them: no
 word overlapping another, the columns flush and the last page balanced.
+
+## Slides: `-mslides`
+
+A third class on `-mbook`'s macros sets a talk, after LaTeX's beamer:
+a page a slide, 10 by 5.625 inches (16:9; `.aspect 4:3` for 10 by
+7.5), 20 points on 25, Libertinus Sans (`.typeface serif` for the
+book's face), the text ragged and not hyphenated, titles in a dark
+blue (`.accent`), the slide's number small at the foot's right. What a
+book sets in a page a slide sets: lists, equations, tables, pictures,
+images, boards, links. `book -m slides` runs it, citing by number:
+there is no foot for notes, and `.fn` is refused.
+
+Everything rests on one choice: a slide is diverted whole and set when
+the next begins. Then it is known before any of it is set, and three
+things a slide wants come of that.
+
+*Builds.* Each `.pause` ends the slide's diversion and begins another,
+so a slide of three steps is three diversions. Its first page sets the
+first, its second the first two, and so on; what was shown already is
+where it was, because what comes after is below it (beamer's `\pause`
+leaves the later parts' room, invisible, for the same reason). A
+diversion is set again as often as it is wanted, so the source is read
+once. The pages share the slide's number, as their folio and so as the
+PDF's page labels (3, 3, 3).
+
+The tagged PDF must read the slide once. The pages before its last are
+artifacts (`x X tag art`), and tr2pdf now takes an artifact as outside
+the structure: a tag within one is not made, so the list items and
+paragraphs that page repeats are not elements, and neither is a link,
+which PDF/UA wants in the structure. The slide's last page has its
+structure, a `Sect` holding its heading (H2, or H3 under a section's)
+and its text, and its links; a `.label` in a slide is a destination
+there too, written by a transparent line (`\!.sl-dest`) that only the
+last page's setting turns into `x X dest`, as a destination's name may
+be given once. The slide's own destination and bookmark are on its
+first page, where one going to the slide should arrive.
+
+*Overflow.* A slide's height is known before it is set: on its last
+page, where its last step's last line reaches is compared with the
+foot, and a slide too tall is said with by how much, in points. Its
+text then runs off the page, as beamer's does, not onto another: while
+a slide is set, troff's page is made as long as it needs, and the
+PDF's page is `x X papersize`'s, which clips it.
+
+*Columns.* `.column` diverts each column within the slide's diversion
+(the column's measure `-mbook`'s, so a display is centred in it); at
+`.endcolumns` each is set from the place they began, one beside
+another, and the text goes on below the longest. A `.pause` within
+columns would split a column's diversion across steps, and is refused.
+
+An image is `-mbook`'s `.image`, with two differences. Its room is
+made even where a slide or a column begins, which no-space mode (so
+that a slide does not open with space) would otherwise swallow: the
+image was set upward from the first baseline, over the title. And an
+image given no size is its own, no wider than the line and no taller
+than the room below it, reckoned from where the slide's text begins
+(below a title of one line), the steps before and the place in the
+step, so that a photograph dropped onto a slide fits it.
+
+The slide's pages are laid out by place, not by traps: the title from
+the top margin, the text below it, the folio half way down the bottom
+margin; `-mbook`'s head is reduced to setting the page's size and
+offset, and its end (notes and floats waiting) is not wanted. A float
+is set where it is written: a slide has nowhere else for it.
+
+It found a fault in troff. A diversion reread into another gave each
+line the spacing of the environment it was reread in, not its own: a
+program's text on a tint, set at 16 points on 21 and diverted again as
+part of its slide, came out at 25. Each line keeps its own now
+(`ren_sp` records the spacing the line was given, not the
+environment's). And a place given by `|` and an expression,
+`.sp |\n[.p]u*30/100u`, is not that expression's value: the page broke
+there. The class reckons such a place into a register first.
+
+A title with an apostrophe broke more than slides. `-mbook` tested
+strings for text by comparing them with nothing (`'\*[x]''`) and
+measured running heads and captions with `\w'...'`, and set the heads
+with `.tl '...'`: an apostrophe in the string ends the comparison, the
+measure or the field. A caption such as "Gauss's box" printed troff's
+requests as text, and a chapter "Gauss's Law of Error" lost its running
+head. Text is now tested by its width (`\w^\*[x]^`), measured with `^`
+as the delimiter, and the heads set with `"`, in `-mbook`, `-marticle`,
+`-mmemo` and `-mslides`.
+
+`examples/slides.ms` is a talk of eleven slides on fifteen pages, and
+`tests/host/slides_test.sh` checks it: the steps, each page the one
+before with more and nothing moved; the labels, the structure each
+slide's once and the bookmarks; columns and a display in one; the
+references; a slide too tall said and run off its page; a link on a
+slide with steps made on its last page alone; images first on a slide
+and in a column, in a figure, fitted when given no size, and arriving
+with a step; apostrophes in titles, a caption and a chapter's running
+head.
 
 ## Fonts
 

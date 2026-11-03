@@ -73,7 +73,7 @@
 .ti 0
 .nf
 .ll \\n[book-fullw]u
-.if !'\\*[memo-org]'' \{\
+.if \w^\\*[memo-org]^ \{\
 .	book-tag P
 .	ad r
 .	fi
@@ -96,7 +96,7 @@
 \h'0.75i-\w'\f[I]\s-1subject:\s0\fP'u-0.5m'\f[I]\s-1subject:\s0\fP\h'0.5m'\f[B]\\*[book-title]\fP
 .br
 .book-tag end
-.if !'\\*[book-subtitle]'' \{\
+.if \w^\\*[book-subtitle]^ \{\
 .	book-tag P
 \f[B]\\*[book-subtitle]\fP
 .	br
@@ -105,8 +105,8 @@
 .	sp 0.4v
 .	ps -1
 .	book-tag P
-.	ie '\\*[memo-file]'' Case \\*[memo-case]
-.	el .ie '\\*[memo-case]'' File \\*[memo-file]
+.	ie !\w^\\*[memo-file]^ Case \\*[memo-case]
+.	el .ie !\w^\\*[memo-case]^ File \\*[memo-file]
 .	el Case \\*[memo-case] \(em File \\*[memo-file]
 .	br
 .	ps
@@ -117,7 +117,7 @@
 .in \\n[memo-lw]u+0.5i+0.6i
 .ll \\n[book-fullw]u
 .nf
-.if !'\\*[book-date]'' \{\
+.if \w^\\*[book-date]^ \{\
 .	book-tag P
 .	memo-label date:
 \f[B]\\*[book-date]\fP
@@ -131,7 +131,7 @@
 .	memo-from
 .	sp 0.5v
 .\}
-.if !'\\*[memo-number]'' \{\
+.if \w^\\*[memo-number]^ \{\
 .	book-tag P
 .	memo-label TM:
 \f[B]\\*[memo-number]\fP
@@ -145,7 +145,7 @@
 .fi
 .ad \\*[book-adj]
 .sp 0.4i
-.if !'\\*[memo-type]'' \{\
+.if \w^\\*[memo-type]^ \{\
 .	ce 1
 .	book-tag P
 \f[I]\\*[memo-type]\fP
