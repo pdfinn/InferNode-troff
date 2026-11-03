@@ -53,14 +53,20 @@ a journal's article in two columns)
 or
 .B memo
 .RB ( -mmemo ,
-a technical memorandum or report).
+a technical memorandum or report)
+or
+.B slides
+.RB ( -mslides ,
+a talk's slides).
 It runs
 .IR refer (1)
 with the database
 .I works.bib
 (its citations in the style,
 .B chicago
-by default, with its options:
+by default,
+.B numeric
+for slides, with its options:
 .B "-S chicago,british,nodoi"
 as a British thesis has them),
 .IR pic (1),
@@ -222,6 +228,7 @@ each page is a link to it.
 book -p works.bib thesis.ms
 book -m article -S numeric -p works.bib paper.ms
 book -m memo memo.ms
+book -m slides -p works.bib talk.ms
 book -f -p works.bib -o press.pdf thesis.ms
 book2tex -p works.bib -o thesis.tex thesis.ms
 book2tex -c ieee -p works.bib -o paper.tex paper.ms
@@ -261,7 +268,11 @@ headings or paragraphs
 .BR .maketitle ,
 .BR .p )
 is set by
-.BR "book -l" ;
+.BR "book -l" ,
+one with a
+.B .slide
+by
+.BR "book -l -m slides" ;
 any other by
 .I troff
 with the macros its name gives.

@@ -278,6 +278,89 @@ the right), or a report's (the title centred).
 .TP
 .B .signature
 The authors' names at the end, at the right.
+.SS -mslides
+A talk's slides: -mbook's macros, a page a slide, 10 by 5.625 inches
+(16:9), 20 points on 25 in Libertinus Sans, the text ragged and not
+hyphenated, each slide's number at its foot.
+What -mbook sets in a page is set in a slide: lists, equations,
+tables, pictures, images, chess boards, links; figures and tables are
+set where they are written, not floated.
+.TP
+.B ".title \fIT\fP  .subtitle \fIS\fP  .author \fIA\fP  .affil \fIplace\fP  .date \fID\fP"
+.TP
+.B .maketitle
+The title slide; the first slide or section makes it if it has not
+been made.
+.TP
+.BI ".section " title " \fR[\fIlabel\fR]"
+A slide of the title alone, beginning a part of the talk: a heading
+(H2) in the tagged PDF and a bookmark, the slides after it below it.
+.TP
+.BR .slide " [\fItitle\fP [\fIlabel\fP]]"
+A slide; what follows, to the next, is on it.
+Its title (a heading and a bookmark) at the top; with none, its text
+begins there.
+.B \e*[ref
+.IB label ]
+is its number, a link to it.
+.TP
+.BR .item " [\fImark\fP]"
+An item of a list; outside one, it begins a list of bullets, ended
+with the slide.
+-mbook's
+.B .list
+and
+.B .endlist
+make the others.
+.TP
+.B .pause
+What follows is shown on the next page: the slide is set again with it
+added, and what was shown already does not move (beamer's
+.BR \epause ).
+Each page before a slide's last is an artifact in the tagged PDF, with
+no links on it: its structure and links are on its last page, read
+once.
+Its pages are labelled with the slide's number.
+.TP
+.B ".columns  .column \fR[\fPwidth\fR]\fP  .endcolumns"
+Side by side: each
+.B .column
+begins one, half the measure wide unless
+.I width
+is given, the next beside it 0.4 inches on; the text after
+.B .endcolumns
+below the longest.
+A display is centred in its column.
+.B .pause
+within columns is refused.
+.TP
+.B ".code \fR...\fP .endcode"
+A program's text, as typed, in Libertinus Mono on a tint; a line
+beginning with a dot is written
+.BR \e&. .
+.TP
+.B ".aspect 16:9\fR|\fP4:3"
+The page's shape, before the first slide (4:3 is 10 by 7.5 inches).
+.TP
+.B ".typeface sans\fR|\fPserif"
+Libertinus Sans (the default) or Serif.
+.TP
+.BI ".accent " colour
+The titles' colour
+.RB ( #1d3f6e ).
+.PP
+A slide is diverted whole and set when the next begins, so that its
+height is known: a slide too tall for its page is said on the standard
+error, with by how much, and its text runs off the page rather than
+onto another, as beamer's does.
+A slide has no foot for notes:
+.B .fn
+is refused, and citations are numbered
+.RB ( "refer -S numeric" ,
+.BR "book -m slides" 's
+default); refer's
+.B .bibliography
+is a slide of its own.
 .SS -man
 A manual page, as Plan 9's are written and set:
 .BR .TH ,

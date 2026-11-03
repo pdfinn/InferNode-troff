@@ -4,11 +4,12 @@
 #	book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.ms
 #
 # -m names the macros, -mbook's or a class built on them: article
-# (-marticle, a journal's article in two columns), memo (-mmemo).
+# (-marticle, a journal's article in two columns), memo (-mmemo),
+# slides (-mslides, a talk's).
 # Citations are set by refer(1) from the database, in the style
-# (chicago); pictures, chess diagrams, tables and equations by pic(1),
-# chess(1), tbl(1) and eqn(1),
-# if there are any (eqn with its settings for the fonts,
+# (chicago; numeric for slides, which have no foot for notes);
+# pictures, chess diagrams, tables and equations by pic(1), chess(1),
+# tbl(1) and eqn(1), if there are any (eqn with its settings for the fonts,
 # /lib/troff/eqnrc); the book by troff(1) -mbook, as
 # often as its table of contents and references need to be set again
 # (they come from the pass before, through book.aux); then the PDF by
@@ -24,7 +25,7 @@
 load std
 
 bib=()
-style=chicago
+style=()
 macros=book
 out=()
 final=0
@@ -39,6 +40,9 @@ while {! ~ $#args 0 1 && ~ ${hd $args} -*} {
 	if {~ $o -o} {out=${hd $args}; args=${tl $args}}
 	if {~ $o -f} {final=1}
 	if {~ $o -l} {look=1}
+}
+if {~ $#style 0} {
+	if {~ $macros slides} {style=numeric} {style=chicago}
 }
 ~ $#args 1 || {echo 'usage: book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.ms' >[1=2]; raise usage}
 src=$args
