@@ -285,6 +285,10 @@ hyphenated, each slide's number at its foot.
 What -mbook sets in a page is set in a slide: lists, equations,
 tables, pictures, images, chess boards, links; figures and tables are
 set where they are written, not floated.
+An image
+.RB ( .image )
+given no size is its own, no wider than the line and no taller than
+the room below it on the slide.
 .TP
 .B ".title \fIT\fP  .subtitle \fIS\fP  .author \fIA\fP  .affil \fIplace\fP  .date \fID\fP"
 .TP

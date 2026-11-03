@@ -167,7 +167,7 @@
 .br
 .book-tag end
 .ft R
-.if !'\\*[book-subtitle]'' \{\
+.if \w^\\*[book-subtitle]^ \{\
 .	sp 0.1i
 .	ps \\n[book-ps]*6/5
 .	vs \\n[.s]p*12/10
@@ -177,7 +177,7 @@
 .\}
 .ps \\n[book-ps]
 .vs \\n[book-vs]u
-.if !'\\*[book-author]'' \{\
+.if \w^\\*[book-author]^ \{\
 .	sp 0.4i
 .	book-tag P
 \\*[book-author]
@@ -185,12 +185,12 @@
 .\}
 .ps \\n[book-ps]*8/10
 .vs \\n[.s]p*13/10
-.if !'\\*[sl-affil]'' \{\
+.if \w^\\*[sl-affil]^ \{\
 .	book-tag P
 \m[\\*[sl-grey]]\\*[sl-affil]\m[]
 .	br
 .\}
-.if !'\\*[book-date]'' \{\
+.if \w^\\*[book-date]^ \{\
 .	sp 0.15i
 .	book-tag P
 \m[\\*[sl-grey]]\\*[book-date]\m[]
@@ -199,9 +199,11 @@
 .book-tag end
 .ev
 ..
+.\" (a string is tested for text by its width, \w^\*[s]^: a comparison,
+.\" '\*[s]'', is broken by an apostrophe in it, as in "Kernighan's")
 .\" the title slide first, if there is a title and it is not made
 .de sl-first
-.if !\\n[sl-made] .if !'\\*[book-title]'' .maketitle
+.if !\\n[sl-made] .if \w^\\*[book-title]^ .maketitle
 .nr sl-made 1
 ..
 .\"
@@ -257,6 +259,11 @@
 .if !'\\$2'' .book-label \\$2
 .nr sl-open 1
 .nr sl-steps 1
+.\" where its text begins on the page (below a title of one line), and
+.\" how far down the steps before this one reach
+.ie !\w^\\$1^ .nr sl-top \\n[book-tm]
+.el .nr sl-top \\n[book-tm]+(\\n[book-ps]p*3/2)+0.3i
+.nr sl-done 0
 .in 0
 .ll \\n[book-fullw]u
 .ps \\n[book-ps]
@@ -272,6 +279,7 @@
 .el .if \\n[sl-open] \{\
 .	br
 .	di
+.	nr sl-done +\\n[dn]
 .	nr sl-steps +1
 .	di sl-b\\n[sl-steps]
 .\}
@@ -320,8 +328,8 @@
 .pl 4*\\n[book-ph]u
 .ie \\n[sl-final] .book-tag push Sect
 .el .book-tag art
-.if !'\\*[sl-title]'' .sl-head \\$1
-.if '\\*[sl-title]'' .sp |\\n[book-tm]u
+.ie \w^\\*[sl-title]^ .sl-head \\$1
+.el .sp |\\n[book-tm]u
 .nr sl-i 1
 .sl-steps \\$1
 .if \\n[sl-final] \{\
@@ -419,6 +427,7 @@
 .if \\n[sl-incol] .endcolumns
 .sp 0.4v
 .nr sl-incol 1
+.nr sl-cy0 \\n[.d]
 .nr sl-ncol 0
 .nr sl-cx 0
 .nr sl-ll0 \\n[.l]
@@ -521,6 +530,40 @@
 .in \\n[sl-cin]u
 .fi
 .sp 0.6v
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" an image (-mbook's .image): its room made, though it begin a slide or
+.\" a column, where no space is (.ns); given no size, its own, no wider
+.\" than the line and no taller than the room below it on the slide
+.\"
+.rn image book-image
+.de image
+.if \\n[sl-open] .rs
+.ie !\\n[sl-open] .book-image \\$@
+.el .ie '\\$2\\$3'' .sl-image \\$1
+.el .book-image \\$@
+..
+.de sl-image
+.imgsize \\$1
+.nr sl-iw 0
+.nr sl-ih 0
+.if (\\n[imgw]>0)&(\\n[imgh]>0) \{\
+.	nr sl-ires \\n[imgres]
+.	if !\\n[sl-ires] .nr sl-ires 72
+.	nr sl-iw \\n[imgw]*1i/\\n[sl-ires]
+.	nr sl-ih \\n[imgh]*1i/\\n[sl-ires]
+.	\" (the room: from here, below what is above it, to the text's foot)
+.	nr sl-room \\n[book-ph]-\\n[book-bm]-\\n[sl-top]-\\n[sl-done]-\\n[.d]
+.	if \\n[sl-incol] .nr sl-room -\\n[sl-cy0]
+.	if \\n[.d]>0 .nr sl-room -0.3v
+.	if (\\n[sl-ih]>\\n[sl-room])&(\\n[sl-room]>1v) \{\
+.		nr sl-iw \\n[sl-iw]/10*\\n[sl-room]/(\\n[sl-ih]/10)
+.		nr sl-ih \\n[sl-room]
+.	\}
+.\}
+.ie \\n[sl-ih] .book-image \\$1 \\n[sl-iw]u \\n[sl-ih]u
+.el .book-image \\$1
 ..
 .\"
 .\" ---------------------------------------------------------------

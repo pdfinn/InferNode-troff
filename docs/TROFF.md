@@ -784,6 +784,15 @@ PDF's page is `x X papersize`'s, which clips it.
 another, and the text goes on below the longest. A `.pause` within
 columns would split a column's diversion across steps, and is refused.
 
+An image is `-mbook`'s `.image`, with two differences. Its room is
+made even where a slide or a column begins, which no-space mode (so
+that a slide does not open with space) would otherwise swallow: the
+image was set upward from the first baseline, over the title. And an
+image given no size is its own, no wider than the line and no taller
+than the room below it, reckoned from where the slide's text begins
+(below a title of one line), the steps before and the place in the
+step, so that a photograph dropped onto a slide fits it.
+
 The slide's pages are laid out by place, not by traps: the title from
 the top margin, the text below it, the folio half way down the bottom
 margin; `-mbook`'s head is reduced to setting the page's size and
@@ -799,12 +808,25 @@ environment's). And a place given by `|` and an expression,
 `.sp |\n[.p]u*30/100u`, is not that expression's value: the page broke
 there. The class reckons such a place into a register first.
 
+A title with an apostrophe broke more than slides. `-mbook` tested
+strings for text by comparing them with nothing (`'\*[x]''`) and
+measured running heads and captions with `\w'...'`, and set the heads
+with `.tl '...'`: an apostrophe in the string ends the comparison, the
+measure or the field. A caption such as "Gauss's box" printed troff's
+requests as text, and a chapter "Gauss's Law of Error" lost its running
+head. Text is now tested by its width (`\w^\*[x]^`), measured with `^`
+as the delimiter, and the heads set with `"`, in `-mbook`, `-marticle`,
+`-mmemo` and `-mslides`.
+
 `examples/slides.ms` is a talk of eleven slides on fifteen pages, and
 `tests/host/slides_test.sh` checks it: the steps, each page the one
 before with more and nothing moved; the labels, the structure each
 slide's once and the bookmarks; columns and a display in one; the
 references; a slide too tall said and run off its page; a link on a
-slide with steps made on its last page alone.
+slide with steps made on its last page alone; images first on a slide
+and in a column, in a figure, fitted when given no size, and arriving
+with a step; apostrophes in titles, a caption and a chapter's running
+head.
 
 ## Fonts
 

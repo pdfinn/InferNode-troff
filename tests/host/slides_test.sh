@@ -20,6 +20,15 @@
 #	.columns said; .aspect 4:3; an untitled slide; \*[ref] a slide's
 #	number, a link to it; a link on a slide with .pause made on its
 #	last page alone;
+#	images: one first on a slide below its title, one first in a column
+#	beside a list (each was set upward, over the title, where a slide's
+#	or column's top has no space to make room in), one in a figure with
+#	its caption, one given no size its own fitted to the room below the
+#	title (its width the line's, its height the room's), one shown on a
+#	slide's second step only; each a Figure once, with its description;
+#	an apostrophe in a title, a subtitle, a caption: set, not broken;
+#	-mbook: a chapter titled with an apostrophe keeps its running head
+#	(the head's width was measured with ' as \w's delimiter);
 #	troff: a line reread from a diversion into another keeps its own
 #	spacing (it took the environment's: a program's text, set at 16 on
 #	21 points, came out at 25 in a slide).
@@ -69,6 +78,50 @@ See slide \\*[ref cols].
 .pause
 And more.
 ''')
+# images in plain colours, found again on the page by their colour
+import struct, zlib
+def chunk(t, b):
+    return struct.pack('>I', len(b)) + t + b + struct.pack('>I', zlib.crc32(t + b) & 0xffffffff)
+def png(name, w, h, rgb):
+    row = b'\x00' + bytes(rgb) * w
+    p = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0))
+    open(d + '/' + name, 'wb').write(p + chunk(b'IDAT', zlib.compress(row * h)) + chunk(b'IEND', b''))
+png('red.png', 400, 200, (255, 0, 0))
+png('green.png', 200, 200, (0, 255, 0))
+png('blue.png', 300, 150, (0, 0, 255))
+png('huge.png', 2000, 1500, (255, 0, 255))
+open(d + '/img.ms', 'w').write('''.title "Images' Places"
+.subtitle "Kernighan's, O'Reilly's"
+.slide "First on a slide"
+.alt "A red rectangle."
+.image red.png 4i
+.slide "First in a column"
+.columns
+.column 4.5i
+.item
+A list
+.column 3.5i
+.alt "A green square."
+.image green.png 2i
+.endcolumns
+.slide "Gauss's figure"
+.figure f
+.alt "A blue rectangle."
+.image blue.png 3i
+.caption "Gauss's blue rectangle."
+.endfigure
+.slide "No size given"
+.alt "A magenta rectangle."
+.image huge.png
+.slide "Built"
+.item
+A point
+.pause
+.alt "A red rectangle."
+.image red.png 2i
+''')
+words = ' '.join(['words'] * 12) + '.'
+open(d + '/chap.ms', 'w').write('.chapter "Gauss\'s Law of Error"\n' + '\n'.join([words] * 120) + '\n')
 open(d + '/vs.tr', 'w').write('''.vs 25p
 .ev c
 .vs 10p
@@ -92,6 +145,7 @@ PY
 SDL_VIDEODRIVER=dummy with_timeout 300 "$EMU" -c1 -pheap=1024m -pmain=1024m -r"$ROOT" /dis/sh.dis -c \
     "cd '#U*$tmp'; book -m slides -p works.bib slides.ms >[2] slides.err;
      book -m slides over.ms >[2] over.err; book -m slides odd.ms >[2] odd.err;
+     book -m slides img.ms >[2] img.err; book chap.ms >[2] chap.err;
      troff vs.tr > vs.out >[2] vs.err" </dev/null >"$tmp/emu.log" 2>&1
 
 fail=0
@@ -228,6 +282,65 @@ check(any(x.get('/D') == '/lab-cols' for x in a) and r.get_destination_page_numb
 links = [i for i, p in enumerate(r.pages) if p.get('/Annots')]
 check(links == [2, 4] and find(pg[3][2], 'https://example.org') if len(pg) == 5 else 0,
       'slides: no link on a page before a slide\'s last, its link on its last', links)
+
+# images: where each is, by its colour on the page drawn at 72 to the inch
+def colour(pdf, page, rgb):
+    x = subprocess.run(['pdftoppm', '-r', '72', '-f', str(page), '-l', str(page), d + '/' + pdf],
+                       capture_output=True).stdout
+    m = re.match(rb'P6\s+(\d+)\s+(\d+)\s+255\s', x)
+    if not m:
+        return None
+    W, H = int(m.group(1)), int(m.group(2))
+    px = x[m.end():]
+    xs, ys = [], []
+    for y in range(0, H, 2):
+        r = px[3 * W * y:3 * W * (y + 1)]
+        for xx in range(0, W, 2):
+            c = r[3 * xx:3 * xx + 3]
+            if all(abs(c[i] - rgb[i]) < 40 for i in range(3)):
+                xs.append(xx)
+                ys.append(y)
+    if not xs:
+        return None
+    return (min(xs), min(ys), max(xs), max(ys))
+err = read('img.err')
+pg = words('img.pdf')
+check(len(pg) == 7, 'images: seven pages', (len(pg), err[-300:]))
+if len(pg) == 7:
+    t = find(pg[0][2], 'Places')
+    check(t and find(pg[0][2], 'Kernighan’s,') and find(pg[0][2], 'O’Reilly’s'), 'images: a title and subtitle with apostrophes set', pg[0][2][:6])
+    tb = max(w[3] for w in pg[1][2] if w[4] in ('First', 'slide'))
+    r = colour('img.pdf', 2, (255, 0, 0))
+    check(r and r[1] > tb and abs((r[2] - r[0]) - 288) < 4, 'images: one first on a slide, below its title, as wide as given', (r, tb))
+    W, H, ws = pg[2]
+    tb = max(w[3] for w in ws if w[4] == 'column')
+    li = find(ws, 'list')
+    g = colour('img.pdf', 3, (0, 255, 0))
+    check(g and li and g[1] > tb and g[0] > li[0][2] and abs(g[1] - li[0][1]) < 20,
+          'images: one first in a column, beside the list, below the title', (g, li, tb))
+    ws = pg[3][2]
+    cap = find(ws, 'Gauss’s')
+    b = colour('img.pdf', 4, (0, 0, 255))
+    check(len(cap) == 2 and b and cap[1][1] > b[3] and not find(ws, 'ce') and not [w for w in ws if '<=' in w[4]],
+          'images: one in a figure, its caption below it, an apostrophe in the caption and the title', ([w[4] for w in ws], b))
+    m = colour('img.pdf', 5, (255, 0, 255))
+    tb = max(w[3] for w in pg[4][2] if w[4] in ('No', 'size', 'given'))
+    check(m and m[1] > tb and m[3] <= H - 0.45 * 72 and abs((m[2] - m[0]) / (m[3] - m[1]) - 4 / 3) < 0.05 and 'too tall' not in err,
+          'images: one given no size fitted to the room below the title, its proportions kept', (m, H, err))
+    check(colour('img.pdf', 6, (255, 0, 0)) is None and colour('img.pdf', 7, (255, 0, 0)) is not None,
+          'images: one after a .pause on the slide\'s second page only')
+r = pypdf.PdfReader(d + '/img.pdf')
+els = walk(r.trailer['/Root']['/StructTreeRoot']['/K'], [])
+alts = [str(e.get('/Alt')) for _, k, e in els if k == '/Figure']
+check(alts == ['A red rectangle.', 'A green square.', 'A blue rectangle.', 'A magenta rectangle.', 'A red rectangle.'],
+      'images: each a Figure once, with its description', alts)
+
+# -mbook: the running head of a chapter titled with an apostrophe
+heads = []
+for p in (3, 5):
+    x = subprocess.run(['pdftotext', '-f', str(p), '-l', str(p), d + '/chap.pdf', '-'], capture_output=True, text=True).stdout
+    heads.append(x.strip().split('\n')[0])
+check(heads and all('Law of Error' in h for h in heads), '-mbook: a chapter titled with an apostrophe keeps its running head', heads)
 sys.exit(fail)
 PY
 
