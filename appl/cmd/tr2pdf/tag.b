@@ -211,6 +211,10 @@ tag_cmd(arg: string)
 	(op, rest) := word(arg);
 	if(op == nil)
 		return;
+	# an artifact is outside the structure: what is tagged within it (a
+	# slide's page repeated before its last, -mslides') is not
+	if(tart > 0 && op != "art" && op != "endart")
+		return;
 	tcloseimpl();
 	case op {
 	"push" =>
