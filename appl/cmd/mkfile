@@ -3,6 +3,7 @@
 TARG=\
 	book2tex.dis\
 	chess.dis\
+	md2troff.dis\
 	mkindex.dis\
 	tr2img.dis\
 
@@ -10,6 +11,7 @@ SYSMODULES=\
 	bufio.m\
 	draw.m\
 	sh.m\
+	string.m\
 	sys.m\
 
 PKGMODULES=\

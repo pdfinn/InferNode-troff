@@ -40,12 +40,22 @@ unnumbered.
 .BI ".subsection " "title " \fR[ label \fR]
 .TP
 .BI ".subsubsection " "title " \fR[ label \fR]
+.TP
+.BI ".section* " "title " \fR[ label \fR]
+.TP
+.BI ".subsection* " "title " \fR[ label \fR]
 Headings; chapters open on right-hand pages (one-sided, with the
 register
 .B book-recto
 0, on the next), a numbered chapter's sections numbered in it (1.1,
 1.1.1), as the contents give them; a subsubsection neither numbered nor
-in the contents.
+in the contents; a section or subsection with
+.B *
+unnumbered, and not counted (LaTeX's
+.B \esection*
+and
+.BR \esubsection* ),
+in the contents without a number.
 A chapter's
 .I short
 title is its running head; a title too long for one beside the page's
@@ -54,9 +64,19 @@ Long entries in the contents are filled short of their page's number,
 hung after their numbers.
 .TP
 .B ".p"
-A paragraph (or a blank line).
+A paragraph (or a blank line), its first line indented from the
+indent the text is at: a quotation's, a list's item's.
 .TP
 .B ".quote ... .endquote"
+.TP
+.B ".code ... .endcode"
+A program's text, as typed (LaTeX's verbatim), in Libertinus Mono a
+size smaller, indented; a line beginning with a dot or a quote written
+.BR \e& .,
+an empty one
+.B \e&
+(a blank line is a paragraph).
+-mslides sets it on a tint.
 .TP
 .BI ".epigraph ... .attrib " source " .endepigraph"
 .TP

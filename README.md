@@ -5,7 +5,8 @@ troff and its preprocessors (eqn, tbl, pic, refer, chess), PDF output (tr2pdf),
 macro packages for books (`-mbook`), journal articles (`-marticle`),
 memoranda and reports (`-mmemo`), a talk's slides (`-mslides`), papers
 (`-ms`) and manual pages
-(`-man`), an index maker, a LaTeX converter, and the Libertinus fonts.
+(`-man`), an index maker, a LaTeX converter, a Markdown reader, and the
+Libertinus fonts.
 
 ![Two pages of a chapter set by book(1): a chapter opening with an epigraph, footnotes, displayed and inline equations, a section heading, a table and its caption](docs/images/chapter.png)
 
@@ -73,6 +74,10 @@ it, what was typed beside a live document went into the text twice.
   ACM's submission systems set a paper (`book2tex -c ieee`,
   `-c acm,sigconf`). `tests/host/latex_test.sh` checks that every word
   troff set arrives.
+- **Markdown.** `book paper.md` sets a book, article, memorandum or
+  talk written in Markdown (CommonMark's, with GitHub's tables and
+  pandoc's front matter, notes, citations and figures), as tagged as
+  one written in troff: `md2troff` reads it first.
 
 ![Displays set by eqn: the quadratic formula, the Rogers–Ramanujan continued fraction, Ramanujan's series for 1/π, Cardano's formula, Cauchy's integral formula, the Vandermonde determinant, a function defined by cases, and the binomial theorem](docs/images/maths.png)
 
@@ -163,6 +168,55 @@ on their own as well:
 `man book`, `man 6 troff`, `man troff` and `man eqn` describe it all;
 [`docs/TROFF.md`](docs/TROFF.md) is the design, and records what each
 choice was measured against.
+
+## Writing in Markdown
+
+A book, article, memorandum or talk may be written in Markdown instead,
+and set by the same command:
+
+```markdown
+---
+title: Setting a Paragraph Whole
+author:
+  - name: A. Typesetter
+    affiliation: InferNode Project
+lang: en-GB
+macros: article
+bibliography: works.bib
+---
+
+# Introduction {#sec:intro}
+
+Troff fills a line until the next word will not fit,[^greedy] or
+"greedily", as Knuth and Plass put it [@knuth1981, 1119].
+
+[^greedy]: Each line is set as soon as it is full.
+
+| Method  | Mean space |
+|:--------|-----------:|
+| greedy  |    0.31 em |
+| optimum |    0.27 em |
+
+Table: Spacing on 180 pages. {#tbl:space}
+```
+
+    book paper.md    # paper.pdf
+
+`md2troff` reads the Markdown, CommonMark's with GitHub's tables, task
+lists and strikethrough and pandoc's front matter, footnotes,
+citations, mathematics (in eqn's language), heading attributes,
+figures, fenced divs and raw troff, and writes troff for `-mbook` or
+the class its front matter's `macros:` names; `book` then makes the
+book as it makes any other, with the bibliography its front matter
+names. Headings are the class's (a book's chapters, an article's
+sections, a talk's slides), `{#label}` a label that `[@sec:intro]`
+refers to, `{-}` unnumbered. A note's mark and a citation follow the
+punctuation after them, as Chicago has it. Straight quotation marks are
+set as British (‘ ’, and “ ” within them) or American, as the front
+matter's `quotes:` or `lang:` says, or as the curly ones the text
+already has; curly ones are left as they are written. `man md2troff`
+gives it all; `md2troff paper.md | book2tex -m article` writes the same
+paper as LaTeX.
 
 ## In Xenith
 

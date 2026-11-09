@@ -446,8 +446,9 @@
 .if \\n[book-flafter] .book-flafterput
 .book-tag P
 .book-vstretch 1p
-.ie \\n[book-noindent] .ti 0
-.el .ti \\n[book-pi]u
+.\" (at the indent the text is at: a list's item's, a quotation's)
+.ie \\n[book-noindent] .ti \\n[.i]u
+.el .ti \\n[.i]u+\\n[book-pi]u
 .nr book-noindent 0
 ..
 .de book-blank
@@ -803,6 +804,31 @@
 .book-noindent
 .ns
 ..
+.\" an unnumbered section or subsection (LaTeX's \section* and
+.\" \subsection*): set as the others are, its number neither shown nor
+.\" counted
+.de section*
+.nr book-u0 \\n[book-section]
+.nr book-u1 \\n[book-chnum]
+.nr book-u2 \\n[book-nochap]
+.nr book-chnum 0
+.nr book-nochap 0
+.section \\$@
+.nr book-section \\n[book-u0]
+.nr book-chnum \\n[book-u1]
+.nr book-nochap \\n[book-u2]
+..
+.de subsection*
+.nr book-u0 \\n[book-subsection]
+.nr book-u1 \\n[book-chnum]
+.nr book-u2 \\n[book-nochap]
+.nr book-chnum 0
+.nr book-nochap 0
+.subsection \\$@
+.nr book-subsection \\n[book-u0]
+.nr book-chnum \\n[book-u1]
+.nr book-nochap \\n[book-u2]
+..
 .\"
 .\" ---------------------------------------------------------------
 .\" lists: .list [1 a i bullet dash] ... .item ... .endlist, as LaTeX's
@@ -895,6 +921,36 @@
 .book-tag pop
 .book-vstretch 3p
 .ev
+.sp 0.5v
+.book-noindent
+..
+.\"
+.\" ---------------------------------------------------------------
+.\" a program's text: .code ... .endcode, as it is typed (LaTeX's
+.\" verbatim), in Libertinus Mono, a size smaller, indented; a line
+.\" beginning with a dot or a quote written \&., and an empty one \&
+.\" (a blank line is a paragraph); tagged Code
+.\"
+.de code
+.book-begin
+.br
+.if \\n[book-flafter] .book-flafterput
+.book-vstretch 2p
+.sp 0.5v
+.ev code
+.evc 0
+.nf
+.ft CR
+.ps \\n[book-ps]-1
+.vs \\n[book-vs]u-1.5p
+.in +1.5m
+.book-tag Code
+..
+.de endcode
+.br
+.book-tag end
+.ev
+.book-vstretch 2p
 .sp 0.5v
 .book-noindent
 ..

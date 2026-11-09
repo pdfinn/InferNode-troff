@@ -1,0 +1,360 @@
+.TH MD2TROFF 1
+.SH NAME
+md2troff \- Markdown as troff's input, for book
+.SH SYNOPSIS
+.B md2troff
+[
+.BI -m " macros"
+] [
+.B -q
+.BR gb | us | none
+] [
+.BI -k " key"
+] [
+.I file.md
+]
+.SH DESCRIPTION
+.I Md2troff
+reads Markdown and writes troff for
+.B -mbook
+or a class built on it, named by
+.B -m
+or by
+.B macros:
+in the front matter:
+.B book
+(the default),
+.BR article ,
+.B memo
+or
+.BR slides .
+.IR Book (1)
+runs it on a book written in Markdown
+.RI ( book .md
+or
+.IR book .markdown)
+before it does anything else, so that
+.EX
+book paper.md
+.EE
+makes
+.BR paper.pdf ,
+tagged as any book's is.
+The Markdown is CommonMark's, with GitHub's tables, task lists,
+strikethrough and bare links, and pandoc's front matter, footnotes,
+citations, mathematics, heading attributes, figures, fenced divs and
+raw troff.
+.SS The front matter
+Between two lines
+.B ---
+at the head of the file, in YAML's form
+.RB ( "key: value" ,
+a list as
+.B "- item"
+lines or
+.BR "[a, b]" ,
+a long value as
+.B "key: |"
+and the lines indented under it):
+.TP
+.B "title  subtitle  date"
+The title, a line of Markdown each.
+.TP
+.B author
+A name, or a list of names, or of
+.BR name ,
+.BR affiliation ,
+.BR email ,
+.B location
+and
+.B extension
+(a memorandum's room and telephone).
+A book's authors are joined into one line.
+.TP
+.B abstract
+Markdown, an article's or a memorandum's.
+.TP
+.B keywords
+An article's.
+.TP
+.B lang
+The language
+.RB ( en-GB ),
+in the PDF and for the quotation marks.
+.TP
+.B quotes
+.BR gb ,
+.B us
+or
+.B none
+(below).
+.TP
+.B macros
+The class, as
+.BR -m .
+.TP
+.B numbersections
+.B false
+sets every heading unnumbered.
+.TP
+.B toc
+.B true
+sets the contents after the title.
+.TP
+.B notes
+.B endnotes
+sets the notes at the end
+.RB ( .en ,
+.BR .notes ).
+.TP
+.B "bibliography  citestyle"
+The works cited and the style of the citations, for
+.IR book 's
+.B -p
+and
+.BR -S .
+.TP
+.B "papersize  columns"
+The page, and an article's columns (1 or 2).
+.TP
+.B "org  case  file  number  kind  memotype  signature"
+A memorandum's head, and
+.B signature: true
+its authors' names at its end.
+.TP
+.B "aspect  typeface"
+A talk's
+.RB ( 16:9
+or
+.BR 4:3 ;
+.B sans
+or
+.BR serif ).
+.PP
+With no
+.B title:
+a lone heading of the first level at the head of the text is the
+title.
+.SS Blocks
+Headings are
+.BR .chapter ,
+.BR .section ,
+.B .subsection
+and
+.B .subsubsection
+(in an article or memorandum
+.BR .section ,
+.B .subsection
+and
+.BR .subsubsection ;
+in a talk
+.B .section
+and
+.BR .slide ,
+or
+.B .slide
+alone if the text has one level of heading): the highest level the
+text has is the first, and a level deeper than the macros go is set
+as their deepest.
+A heading's attributes follow it in braces:
+.B {#label}
+its label for a cross-reference,
+.B {-}
+or
+.B {.unnumbered}
+unnumbered (the macro with
+.BR * ),
+.B {.appendix}
+.B .appendix
+before it.
+.PP
+Paragraphs are
+.BR .p ;
+block quotations
+.BR .quote ;
+lists
+.B .list
+(1, a, i or bullet, nested; a list that begins at another number, or
+whose numbers end in
+.BR ) ,
+has its marks given; a task list's are ☐ and ☒); code, fenced or
+indented,
+.BR .code ;
+a horizontal rule a centred
+.B "* * *"
+(in a talk, a new slide;
+.B ". . ."
+a pause).
+A table is tbl's, its header in bold, its rules booktabs', a cell of
+more than forty characters a block of text, the table then the
+measure's width; with a caption (pandoc's
+.B "Table: ..."
+or
+.BR ": ..." ,
+before it or after, and a
+.B {#label}
+at its end) it is a floating
+.BR .table .
+An image alone in its paragraph is a
+.BR .figure :
+its text the caption, its title (or its text) the
+.B .alt
+that describes it in the tagged PDF,
+.B {#label width=50% height=2in}
+after it its label and size (a percentage of the measure, or
+.BR in ,
+.BR cm ,
+.BR mm ,
+.BR pt ,
+.BR px ,
+or troff's own units).
+An image within a line is set as a figure after its paragraph, and
+said.
+.B $$
+\&...
+.B $$
+is a display for eqn(1).
+A fenced div
+.RB ( ":::" )
+of the class
+.BR columns ,
+.B column
+.RB ( width= ),
+.B epigraph
+.RB ( attrib= ),
+.B abstract
+or
+.B notes
+(not set: a speaker's) is that; of any other, its text is set as it
+is.
+A code block fenced as
+.B ```{=troff}
+is troff, set as it is written; any other raw format is not set.
+HTML is not set, and said; a comment is dropped.
+.SS In the line
+Emphasis is italic (roman within italic), strong emphasis bold, code
+Libertinus Mono;
+.BR ~~struck~~ ,
+.B H~2~O
+and
+.B 2^10^
+are struck, subscript and superscript.
+A link is
+.B .link
+and a bare address
+.BR .url ,
+the punctuation after either joined to it.
+A note,
+.B [^name]
+with its text elsewhere as
+.B "[^name]: ..."
+(its later paragraphs indented four spaces), or
+.BR ^[text] ,
+is a footnote
+.RB ( .fn ),
+or an endnote; a citation,
+.BR "[@key, place; @key2]" ,
+is
+.B .cite
+for
+.IR refer (1),
+a prefix before the
+.B @
+said and not set.
+The punctuation after a note's mark or a citation is set before it,
+as Chicago has it, and
+.I refer
+moves it again as its style needs.
+A key that is a heading's, table's or figure's label,
+.BR [@sec:method] ,
+is a cross-reference to it
+.RB ( "\e*[ref sec:method]" );
+.B [](#label)
+is too.
+.B $...$
+is eqn's mathematics, in eqn's language, not TeX's
+.RB ( "$x sup 2$" ).
+.B `...`{=troff}
+is troff as written.
+Two spaces or a backslash at a line's end break it.
+Entities
+.RB ( &amp; ,
+.BR &mdash; ,
+.BR &#8212; )
+are their characters; a backslash before a mark is the mark.
+.SS Typography
+.B --
+is an en dash,
+.B ---
+an em dash,
+.B ...
+an ellipsis.
+A straight double quote is the first quotation mark and a straight
+single quote, where it is not an apostrophe, the second (a quotation
+within a quotation):
+.B gb
+sets them as British, ‘ ’ and “ ”,
+.B us
+as American, “ ” and ‘ ’, and
+.B none
+leaves them straight.
+The style is
+.BR -q 's,
+or the front matter's
+.BR quotes: ,
+or its
+.B lang:
+.RB ( en-US
+and
+.B en-CA
+American, any other English British), or that of the curly marks the
+text already has; failing all of these, British, and said.
+Curly marks are left as they are written.
+An apostrophe before a word
+.RB ( "'tis" )
+is taken for a quotation mark: write it
+.B ’
+or
+.BR \e' .
+.PP
+.B -k
+prints the front matter's value for
+.I key
+and nothing else:
+.B "-k macros"
+the class as it is resolved,
+.B "-k bibliography"
+and
+.BR "-k citestyle" ,
+for
+.IR book (1).
+.SH EXAMPLES
+.EX
+book proposal.md
+book -f -p works.bib thesis.md
+md2troff -m article -q us paper.md >paper.ms
+md2troff paper.md | book2tex -m article -o paper.tex
+.EE
+.PP
+A paper's head:
+.EX
+---
+title: Setting a Paragraph Whole
+author:
+  - name: A. Typesetter
+    affiliation: InferNode Project
+lang: en-GB
+macros: article
+bibliography: works.bib
+---
+.EE
+.SH SOURCE
+.B /appl/cmd/md2troff.b
+.SH SEE ALSO
+.IR book (1),
+.IR refer (1),
+.IR troff (6)
+.SH BUGS
+TeX's mathematics is not translated into eqn's.
+A citation's prefix, definition lists and HTML are not set.
+An apostrophe before a word is taken for a quotation mark.

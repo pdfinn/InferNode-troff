@@ -2,6 +2,7 @@
 # book - a book written with troff's macros -mbook, as PDF
 #
 #	book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.ms
+#	book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.md
 #
 # -m names the macros, -mbook's or a class built on them: article
 # (-marticle, a journal's article in two columns), memo (-mmemo),
@@ -22,11 +23,15 @@
 # pass's output, into book.ind, and is set again until that settles too.
 # -l sets it to be looked at as it is written (a document view's live
 # preview): troff's output to standard output, no PDF, no index made.
+# A book written in Markdown (book.md or book.markdown) is made troff's
+# by md2troff(1) first; its front matter's macros, bibliography and
+# citestyle are taken where -m, -p and -S do not give them.
 load std
 
 bib=()
 style=()
 macros=book
+mset=0
 out=()
 final=0
 look=0
@@ -36,16 +41,24 @@ while {! ~ $#args 0 1 && ~ ${hd $args} -*} {
 	args=${tl $args}
 	if {~ $o -p} {bib=${hd $args}; args=${tl $args}}
 	if {~ $o -S} {style=${hd $args}; args=${tl $args}}
-	if {~ $o -m} {macros=${hd $args}; args=${tl $args}}
+	if {~ $o -m} {macros=${hd $args}; args=${tl $args}; mset=1}
 	if {~ $o -o} {out=${hd $args}; args=${tl $args}}
 	if {~ $o -f} {final=1}
 	if {~ $o -l} {look=1}
 }
+~ $#args 1 || {echo 'usage: book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.ms|book.md' >[1=2]; raise usage}
+src=$args
+md=0
+mdtr=()
+if {~ $src *.md *.markdown} {
+	md=1
+	~ $mset 1 || macros=`{md2troff -k macros $src}
+	~ $#bib 0 && bib=`{md2troff -k bibliography $src}
+	~ $#style 0 && style=`{md2troff -k citestyle $src}
+}
 if {~ $#style 0} {
 	if {~ $macros slides} {style=numeric} {style=chicago}
 }
-~ $#args 1 || {echo 'usage: book [-f] [-l] [-m macros] [-p works.bib] [-S style] [-o book.pdf] book.ms' >[1=2]; raise usage}
-src=$args
 stem=`{echo $src | sed 's/\.[^.\/]*$//'}
 aux=$stem.aux
 ~ $#out 0 && out=$stem.pdf
@@ -54,6 +67,12 @@ err=$stem.log
 new=$stem.aux.new
 ind=$stem.ind
 indnew=$stem.ind.new
+# Markdown made troff's: the troff kept beside it while the book is made
+if {~ $md 1} {
+	mdtr=$stem.md.tr
+	md2troff -m $macros $src >$mdtr || raise 'fail:md2troff'
+	src=$mdtr
+}
 
 # pictures, chess diagrams, tables and equations: pic, chess, tbl, eqn
 # (after its settings for the fonts), if there are any
@@ -119,7 +138,7 @@ for n in 1 2 3 4 {
 grep -v '^aux:' $err >[1=2]
 if {~ $look 1} {
 	cat $tr
-	rm -f $err $new $indnew $pre $tr
+	rm -f $err $new $indnew $pre $tr $mdtr
 	exit
 }
 # tagged by -mbook (x X tag), the PDF claims PDF/UA-1, unless a picture
@@ -127,4 +146,4 @@ if {~ $look 1} {
 ua=-u
 grep -s 'a picture with no .alt' $err && ua=()
 tr2pdf $ua $tr >$out
-rm -f $err $new $indnew $pre
+rm -f $err $new $indnew $pre $mdtr
