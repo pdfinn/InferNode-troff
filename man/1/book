@@ -16,7 +16,9 @@ book, book2tex, mkindex \- make a book
 ] [
 .BI -o " book.pdf"
 ]
-.I book.ms
+.IR book .ms
+|
+.IR book .md
 .br
 .B book2tex
 [
@@ -84,6 +86,26 @@ and
 Troff's output is kept as
 .IR book .out,
 for the document views.
+.PP
+A book written in Markdown,
+.IR book .md
+or
+.IR book .markdown,
+is made troff's by
+.IR md2troff (1)
+first, with the macros
+.B -m
+names or, if it names none, those its front matter's
+.B macros:
+does; its
+.B bibliography:
+and
+.B citestyle:
+stand for
+.B -p
+and
+.B -S
+where they are not given.
 .PP
 The PDF is tagged, for those who hear it read or reflow it: its
 headings, paragraphs, quotations, notes, contents, equations (each
@@ -230,6 +252,7 @@ book -m article -S numeric -p works.bib paper.ms
 book -m memo memo.ms
 book -m slides -p works.bib talk.ms
 book -f -p works.bib -o press.pdf thesis.ms
+book proposal.md
 book2tex -p works.bib -o thesis.tex thesis.ms
 book2tex -c ieee -p works.bib -o paper.tex paper.ms
 book2tex -c acm,sigconf -p works.bib -o paper.tex paper.ms
@@ -289,6 +312,7 @@ those of the last time it was set.
 .SH SEE ALSO
 .IR chess (1),
 .IR eqn (1),
+.IR md2troff (1),
 .IR pic (1),
 .IR refer (1),
 .IR tbl (1),

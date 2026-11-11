@@ -1160,6 +1160,33 @@ paragraph()
 }
 
 # a line of LaTeX of its own, what is open closed
+# a line of .code as it was typed: \e a backslash, \& nothing, \(Do a
+# dollar, \(dq a double quote
+verbatim(t: string): string
+{
+	r := "";
+	for(i := 0; i < len t; i++){
+		if(t[i] != '\\' || i + 1 >= len t){
+			r[len r] = t[i];
+			continue;
+		}
+		if(t[i+1] == 'e'){
+			r[len r] = '\\';
+			i++;
+		}else if(t[i+1] == '&')
+			i++;
+		else if(i + 3 < len t && t[i+1:i+4] == "(Do"){
+			r[len r] = '$';
+			i += 3;
+		}else if(i + 3 < len t && t[i+1:i+4] == "(dq"){
+			r[len r] = '"';
+			i += 3;
+		}else
+			r[len r] = t[i];
+	}
+	return r;
+}
+
 block(s: string)
 {
 	closefont(cur);
@@ -1282,7 +1309,7 @@ request(s: string)
 		}
 		if(arg(a, 1) != "")
 			emit(cur, "\\label{" + arg(a, 1) + "}");
-	"section" or "subsection" or "subsubsection" or "section*" =>
+	"section" or "subsection" or "subsubsection" or "section*" or "subsection*" =>
 		# (an article's first section makes its title, if nothing has)
 		if(macros != "book" && !titlemade && (title != "" || authors != nil))
 			maketitle();
@@ -1498,6 +1525,13 @@ request(s: string)
 			warn(sys->sprint(".so %s: %r", arg(a, 0)));
 		else
 			inputs = ref Inp(f, arg(a, 0), 0) :: inputs;
+	"code" =>
+		# a program's text as typed: LaTeX's verbatim, troff's escapes undone
+		block("\\begin{verbatim}");
+		while((t := readline()) != nil && !prefix(".endcode", t))
+			emit(cur, verbatim(t));
+		block("\\end{verbatim}");
+		cur.noindent = 1;
 	"de" or "am" or "ig" =>
 		if(name != "ig")
 			warn("macro " + arg(a, 0) + " not written as LaTeX");
